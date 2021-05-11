@@ -3,7 +3,7 @@ A module to implement useful function to handle trees.
 
 Trees are stored as dictionaries.
 """
-from typing import List, Sequence
+from typing import List, Sequence, Tuple
 from .util import (
     NodeId,
     NodeProperties,
@@ -79,7 +79,7 @@ def get_leaves(children: Childhood, node: NodeId) -> List[NodeId]:
 
 def kruskal_edges(
     edges: Sequence[Edge], weights: NumericalEdgeProperty
-):
+) -> Sequence[Edge]:
     """
     Yield kruskal edges, given a list of edges.
 
@@ -104,7 +104,9 @@ def kruskal_edges(
     return k_edges
 
 
-def kruskal_tree(edges: Sequence[Edge], weights: NumericalEdgeProperty):
+def kruskal_tree(
+    edges: Sequence[Edge], weights: NumericalEdgeProperty
+) -> Tuple[Parenthood, Childhood]:
     """
     Create parents an children relationships from kruskal edges.
 
