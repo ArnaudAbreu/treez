@@ -46,7 +46,7 @@ def get_root_path(parents: Parenthood, node: Node) -> List[Node]:
     """
     Get path to root of a node in a tree.
 
-    *****************************
+    *************************************
     """
     if node not in parents:
         return [node]
@@ -62,7 +62,7 @@ def get_leaves(children: Childhood, node: Node) -> List[Node]:
     """
     Get leaves of a node in a tree.
 
-    *****************************
+    *******************************
     """
     if node not in children:
         return node
@@ -93,6 +93,7 @@ def kruskal_edges(
     # edges are sorted by non-decreasing order of dissimilarity
     edges = sorted(edges, key=lambda x: weights[x])
     k_edges = []
+    k_weights = []
 
     for edge in edges:
         # nodes in involved in the edge
@@ -104,12 +105,13 @@ def kruskal_edges(
         if rn1 != rn2:
             components.union(edge)
             k_edges.append(edge)
-    return k_edges
+            k_weights.append(weights[edge])
+    return k_edges, k_weights
 
 
 def kruskal_tree(
     edges: Sequence[Edge], weights: NumericalEdgeProperty
-) -> Tuple[Parenthood, Childhood]:
+) -> Tuple[Parenthood, Childhood, NumericalNodeProperty]:
     """
     Create parents an children relationships from kruskal edges.
 
@@ -117,9 +119,10 @@ def kruskal_tree(
     """
     parents = dict()
     children = dict()
-    k_edges = kruskal_edges(edges, weights)
-    max_node = max([max(edge) for edge in k_edges]) + 1
-    for edge in k_edges:
+    prop = dict()
+    k_edges, k_weights = kruskal_edges(edges, weights)
+    max_node = 2 * len(k_edges)
+    for edge, weight in zip(k_edges, k_weights):
         n1, n2 = edge
         rn1 = get_root(parents, n1)
         rn2 = get_root(parents, n2)
@@ -127,11 +130,11 @@ def kruskal_tree(
         # I know rn1 and rn2 have different roots
         parents[rn1] = max_node
         parents[rn2] = max_node
-
         children[max_node] = [rn1, rn2]
+        prop[max_node] = weight
 
         max_node += 1
-    return parents, children
+    return parents, children, prop
 
 
 def tree_to_json(
@@ -147,21 +150,25 @@ def tree_to_json(
     output_dict["nodes"] = nodes
     output_dict["parents"] = parents
     output_dict["children"] = children
+    output_dict["nodeprops"] = dict()
+    output_dict["edgeprops"] = dict()
     if nodeprops is not None:
         if isinstance(nodeprops, dict):
             for k, v in nodeprops.items():
-                output_dict[k] = v
+                output_dict["nodeprops"][k] = v
         else:
             raise InvalidNodeProps(
-                "Invalid node props, expected {} but got {}".format(dict, type(nodeprops))
+                "Invalid node props, "
+                "expected {} but got {}".format(dict, type(nodeprops))
             )
     if edgeprops is not None:
         if isinstance(edgeprops, dict):
             for k, v in edgeprops.items():
-                output_dict[k] = v
+                output_dict["edgeprops"][k] = v
         else:
             raise InvalidEdgeProps(
-                "Invalid node props, expected {} but got {}".format(dict, type(edgeprops))
+                "Invalid node props, "
+                "expected {} but got {}".format(dict, type(edgeprops))
             )
     json_dict = json.dumps(output_dict)
     with open(jsonfile, "w") as outputjson:

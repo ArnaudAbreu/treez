@@ -32,6 +32,26 @@ class InvalidEdgeProps(Error):
     pass
 
 
+class UndefinedParenthood(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
+class UndefinedChildhood(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
 Node = Union[int, str, tuple]
 Edge = Tuple[Node, Node]
 
