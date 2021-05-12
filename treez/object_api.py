@@ -51,7 +51,7 @@ class Tree(object):
         if jsonfile is not None:
             self.from_json(jsonfile)
 
-    def get_root(self, node: Node) -> Node:
+    def get_root(self, node: Node = None) -> Node:
         """Give root of the tree."""
         if self.parents is not None:
             return _get_root(self.parents, node)
@@ -107,12 +107,10 @@ class Tree(object):
     ):
         """Build tree with kruskal algorithm from graph edges."""
         k_parents, k_children, k_prop = _kruskal_tree(edges, weights)
-        k_nodes = set()
-        for n1, n2 in edges:
-            k_nodes.add(n1)
-            k_nodes.add(n2)
-
-        self.nodes = list(k_nodes)
         self.parents = k_parents
         self.children = k_children
+        k_nodes = set(k_parents.keys())
+        # root can be missing
+        k_nodes.add(self.get_root())
+        self.nodes = list(k_nodes)
         self.nodeprops = {"kruskal_weights": k_prop}
