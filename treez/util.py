@@ -1,14 +1,45 @@
 """Functions that might be useful (but not necessarily to the user)."""
 from typing import Union, Dict, List, Any, Tuple
 
-NodeId = Union[int, str, tuple]
-Edge = Tuple[NodeId, NodeId]
 
-Parenthood = Dict[NodeId, NodeId]
-Childhood = Dict[NodeId, List[NodeId]]
+class Error(Exception):
+    """
+    Base of custom errors.
 
-NumericalNodeProperty = Dict[NodeId, Union[float, int]]
-SymbolicNodeProperty = Dict[NodeId, Union[str]]
+    **********************
+    """
+
+    pass
+
+
+class InvalidNodeProps(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
+class InvalidEdgeProps(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
+Node = Union[int, str, tuple]
+Edge = Tuple[Node, Node]
+
+Parenthood = Dict[Node, Node]
+Childhood = Dict[Node, List[Node]]
+
+NumericalNodeProperty = Dict[Node, Union[float, int]]
+SymbolicNodeProperty = Dict[Node, Union[str]]
 NumericalEdgeProperty = Dict[Edge, Union[float, int]]
 SymbolicEdgeProperty = Dict[Edge, Union[str]]
 
@@ -58,7 +89,7 @@ class UFDS:
         # should not be used outside of the object
         self._size: NumericalNodeProperty = {}
 
-    def get_root(self, node: NodeId) -> NodeId:
+    def get_root(self, node: Node) -> Node:
         """
         Find and return the name of the set containing the node.
 

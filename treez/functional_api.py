@@ -3,9 +3,9 @@ A module to implement useful function to handle trees.
 
 Trees are stored as dictionaries.
 """
-from typing import List, Sequence, Tuple
+from typing import List, Sequence, Tuple, Optional
 from .util import (
-    NodeId,
+    Node,
     NodeProperties,
     NodeProperty,
     SymbolicNodeProperty,
@@ -17,11 +17,14 @@ from .util import (
     EdgeProperty,
     NumericalEdgeProperty,
     SymbolicEdgeProperty,
-    UFDS
+    UFDS,
+    InvalidEdgeProps,
+    InvalidNodeProps
 )
+import json
 
 
-def get_root(parents: Parenthood, node: NodeId = None) -> NodeId:
+def get_root(parents: Parenthood, node: Node = None) -> Node:
     """
     Get root of a node in a tree.
 
@@ -39,7 +42,7 @@ def get_root(parents: Parenthood, node: NodeId = None) -> NodeId:
     return root
 
 
-def get_root_path(parents: Parenthood, node: NodeId) -> List[NodeId]:
+def get_root_path(parents: Parenthood, node: Node) -> List[Node]:
     """
     Get path to root of a node in a tree.
 
@@ -55,7 +58,7 @@ def get_root_path(parents: Parenthood, node: NodeId) -> List[NodeId]:
     return root_path
 
 
-def get_leaves(children: Childhood, node: NodeId) -> List[NodeId]:
+def get_leaves(children: Childhood, node: Node) -> List[Node]:
     """
     Get leaves of a node in a tree.
 
@@ -129,3 +132,37 @@ def kruskal_tree(
 
         max_node += 1
     return parents, children
+
+
+def tree_to_json(
+    nodes: Sequence[Node],
+    parents: Parenthood,
+    children: Childhood,
+    jsonfile: str,
+    nodeprops: Optional[NodeProperties] = None,
+    edgeprops: Optional[EdgeProperties] = None
+):
+    """Store a jsonified tree to a json file."""
+    output_dict = dict()
+    output_dict["nodes"] = nodes
+    output_dict["parents"] = parents
+    output_dict["children"] = children
+    if nodeprops is not None:
+        if isinstance(nodeprops, dict):
+            for k, v in nodeprops.items():
+                output_dict[k] = v
+        else:
+            raise InvalidNodeProps(
+                "Invalid node props, expected {} but got {}".format(dict, type(nodeprops))
+            )
+    if edgeprops is not None:
+        if isinstance(edgeprops, dict):
+            for k, v in edgeprops.items():
+                output_dict[k] = v
+        else:
+            raise InvalidEdgeProps(
+                "Invalid node props, expected {} but got {}".format(dict, type(edgeprops))
+            )
+    json_dict = json.dumps(output_dict)
+    with open(jsonfile, "w") as outputjson:
+        outputjson.write(json_dict)
