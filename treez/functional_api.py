@@ -110,7 +110,9 @@ def kruskal_edges(
 
 
 def kruskal_tree(
-    edges: Sequence[Edge], weights: NumericalEdgeProperty
+    edges: Sequence[Edge],
+    weights: NumericalEdgeProperty,
+    size: NumericalNodeProperty
 ) -> Tuple[Parenthood, Childhood, NumericalNodeProperty]:
     """
     Create parents an children relationships from kruskal edges.
@@ -119,22 +121,31 @@ def kruskal_tree(
     """
     parents = dict()
     children = dict()
-    prop = dict()
+    props = {"weights": dict(), "size": dict()}
     k_edges, k_weights = kruskal_edges(edges, weights)
     max_node = 2 * len(k_edges)
     for edge, weight in zip(k_edges, k_weights):
         n1, n2 = edge
         rn1 = get_root(parents, n1)
         rn2 = get_root(parents, n2)
+        if rn1 in props["size"]:
+            s1 = props["size"][rn1]
+        else:
+            s1 = size[n1]
+        if rn2 in props["size"]:
+            s2 = props["size"][rn2]
+        else:
+            s2 = size[n2]
         # since it is already a spanning tree,
         # I know rn1 and rn2 have different roots
         parents[rn1] = max_node
         parents[rn2] = max_node
         children[max_node] = [rn1, rn2]
-        prop[max_node] = weight
+        props["weights"][max_node] = weight
+        props["size"][max_node] = s1 + s2
 
         max_node += 1
-    return parents, children, prop
+    return parents, children, props
 
 
 def tree_to_json(

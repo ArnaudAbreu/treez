@@ -103,14 +103,16 @@ class Tree(object):
                 self.nodeprops = v
 
     def build_kruskal(
-        self, edges: Sequence[Edge], weights: NumericalEdgeProperty
+        self, edges: Sequence[Edge],
+        weights: NumericalEdgeProperty,
+        size: NumericalNodeProperty
     ):
         """Build tree with kruskal algorithm from graph edges."""
-        k_parents, k_children, k_prop = _kruskal_tree(edges, weights)
+        k_parents, k_children, k_props = _kruskal_tree(edges, weights, size)
         self.parents = k_parents
         self.children = k_children
         k_nodes = set(k_parents.keys())
         # root can be missing
         k_nodes.add(self.get_root())
         self.nodes = list(k_nodes)
-        self.nodeprops = {"kruskal_weights": k_prop}
+        self.nodeprops = k_props
