@@ -52,14 +52,27 @@ class UndefinedChildhood(Error):
     pass
 
 
+class UnknownNodeProperty(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
 Node = Union[int, str, tuple]
 Edge = Tuple[Node, Node]
 
 Parenthood = Dict[Node, Node]
 Childhood = Dict[Node, List[Node]]
 
+BinaryNodeProperty = Dict[Node, bool]
 NumericalNodeProperty = Dict[Node, Union[float, int]]
 SymbolicNodeProperty = Dict[Node, Union[str]]
+
+BinaryEdgeProperty = Dict[Node, bool]
 NumericalEdgeProperty = Dict[Edge, Union[float, int]]
 SymbolicEdgeProperty = Dict[Edge, Union[str]]
 

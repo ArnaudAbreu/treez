@@ -1,5 +1,5 @@
 """Just a bunch of useful classes."""
-from typing import List, Sequence, Tuple, Optional
+from typing import List, Sequence, Tuple, Optional, Union
 import json
 from .util import (
     Node,
@@ -18,7 +18,8 @@ from .util import (
     InvalidEdgeProps,
     InvalidNodeProps,
     UndefinedParenthood,
-    UndefinedChildhood
+    UndefinedChildhood,
+    UnknownNodeProperty
 )
 from .functional_api import (
     get_root as _get_root,
@@ -26,7 +27,7 @@ from .functional_api import (
     get_leaves as _get_leaves,
     tree_to_json as _tree_to_json,
     kruskal_tree as _kruskal_tree,
-    kruskal_edges as _kruskal_edges
+    cut_on_property as _cut_on_property
 )
 
 
@@ -116,3 +117,36 @@ class Tree(object):
         k_nodes.add(self.get_root())
         self.nodes = list(k_nodes)
         self.nodeprops = k_props
+
+    def cut_on_property(
+        self,
+        cut_name: str,
+        prop: str,
+        threshold: Union[int, float]
+    ):
+        """
+        Produce a list of authorized nodes given a property threshold.
+
+        Set a new property to these nodes.
+        """
+        if prop in self.nodeprops:
+            node_of_interest = _cut_on_property(
+                self.parents,
+                self.children,
+                self.nodeprops[prop],
+                threshold
+            )
+            cut = dict()
+            for node in self.nodes:
+                if node in node_of_interest:
+                    cut[node] = True
+                else:
+                    cut[node] = False
+            self.nodeprops[cut_name] = cut
+
+        raise UnknownNodeProperty(
+            "Property {}"
+            " is not in the tree properties: {}".format(
+                prop, list(self.nodeprops.keys())
+            )
+        )

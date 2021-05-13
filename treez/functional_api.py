@@ -3,7 +3,7 @@ A module to implement useful function to handle trees.
 
 Trees are stored as dictionaries.
 """
-from typing import List, Sequence, Tuple, Optional
+from typing import List, Sequence, Tuple, Optional, Union
 from .util import (
     Node,
     NodeProperties,
@@ -184,3 +184,34 @@ def tree_to_json(
     json_dict = json.dumps(output_dict)
     with open(jsonfile, "w") as outputjson:
         outputjson.write(json_dict)
+
+
+def _expand_on_property(
+    cut: List[Node],
+    children: Childhood,
+    prop: NumericalNodeProperty,
+    threshold: Union[int, float]
+) -> List[Node]:
+    """Create a new tree by cutting based on property threshold."""
+    new_cut = []
+    for node in cut:
+        if node in prop:
+            if prop[node] >= threshold:
+                new_cut.append(node)
+    return new_cut
+
+
+def cut_on_property(
+    parents: Parenthood,
+    children: Childhood,
+    prop: NumericalNodeProperty,
+    threshold: Union[int, float]
+) -> List[Node]:
+    """Produce a list of authorized nodes given a property threshold."""
+    root = get_root(parents)
+    cut = set()
+    remaining = [root]
+    while len(remaining) > 0:
+        cut |= set(remaining)
+        remaining = _expand_on_property(remaining, children, prop, threshold)
+    return list(cut)
