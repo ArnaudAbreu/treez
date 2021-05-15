@@ -351,7 +351,7 @@ def edge_dist(
     return len(set(rpm1) | set(rpm2))
 
 
-def weighted_edge_dist(
+def weighted_dist(
     parents: Parenthood,
     weights: NumericalNodeProperty,
     node1: Node,

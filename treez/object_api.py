@@ -26,10 +26,14 @@ from .util import (
 from .functional_api import (
     get_root as _get_root,
     get_root_path as _get_root_path,
+    get_root_path_match as _get_root_path_match,
     get_leaves as _get_leaves,
     tree_to_json as _tree_to_json,
     kruskal_tree as _kruskal_tree,
-    cut_on_property as _cut_on_property
+    cut_on_property as _cut_on_property,
+    common_ancestor as _common_ancestor,
+    edge_dist as _edge_dist,
+    weighted_dist as _weighted_dist
 )
 import ast
 
@@ -199,3 +203,43 @@ class Tree(object):
                     prop, list(self.nodeprops.keys())
                 )
             )
+
+    def common_ancestor(
+        self,
+        node1: Node,
+        node2: Node
+    ) -> Node:
+        """Return the common ancestor of node1 and node2."""
+        return _common_ancestor(self.parents, node1, node2)
+
+    def edge_dist(
+        self,
+        node1: Node,
+        node2: Node
+    ) -> int:
+        """Return the number of edges to go from node1 to node2 (by common ancestor)."""
+        return _edge_dist(self.parents, node1, node2)
+
+    def weighted_dist(
+        self,
+        weights: Union[NumericalNodeProperty, str],
+        node1: Node,
+        node2: Node
+    ) -> float:
+        """Return the number of edges to go from node1 to node2 (by common ancestor)."""
+        if isinstance(weights, str):
+            if weights in self.nodeprops:
+                return _weighted_dist(
+                    self.parents, self.nodeprops[weights], node1, node2
+                )
+            raise InvalidNodeProps(
+                "Property {} is not in tree properties: {}".format(
+                    weights, self.nodeprops
+                )
+            )
+        if isinstance(weights, dict):
+            return _weighted_dist(self.parents, weights, node1, node2)
+        raise InvalidNodeProps(
+            "Provided property is not a valid property. "
+            "Expected {} or {}, got {}".format(dict, str, type(weights))
+        )
