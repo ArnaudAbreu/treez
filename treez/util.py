@@ -62,9 +62,40 @@ class UnknownNodeProperty(Error):
     pass
 
 
+class InvalidNodeId(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
+class UnrelatedNode(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
+class UnreachableAncestor(Error):
+    """
+    Raise when trying to access unknown level.
+
+    *********************************************
+    """
+
+    pass
+
+
 Node = Union[int, str, tuple]
 Edge = Tuple[Node, Node]
 
+NodeEndomorphism = Dict[Node, Node]
 Parenthood = Dict[Node, Node]
 Childhood = Dict[Node, List[Node]]
 

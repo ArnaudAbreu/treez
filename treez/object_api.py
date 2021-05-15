@@ -5,6 +5,7 @@ from .util import (
     Node,
     NodeProperties,
     NodeProperty,
+    BinaryNodeProperty,
     SymbolicNodeProperty,
     NumericalNodeProperty,
     Parenthood,
@@ -19,7 +20,8 @@ from .util import (
     InvalidNodeProps,
     UndefinedParenthood,
     UndefinedChildhood,
-    UnknownNodeProperty
+    UnknownNodeProperty,
+    InvalidNodeId
 )
 from .functional_api import (
     get_root as _get_root,
@@ -29,6 +31,7 @@ from .functional_api import (
     kruskal_tree as _kruskal_tree,
     cut_on_property as _cut_on_property
 )
+import ast
 
 
 class Tree(object):
@@ -57,7 +60,8 @@ class Tree(object):
         if self.parents is not None:
             return _get_root(self.parents, node)
         raise UndefinedParenthood(
-            "Parenthood of the tree was not defined, please build the tree before use."
+            "Parenthood of the tree was not defined, "
+            "please build the tree before use."
         )
 
     def get_root_path(self, node: Node) -> List[Node]:
@@ -65,15 +69,21 @@ class Tree(object):
         if self.parents is not None:
             return _get_root_path(self.parents, node)
         raise UndefinedParenthood(
-            "Parenthood of the tree was not defined, please build the tree before use."
+            "Parenthood of the tree was not defined, "
+            "please build the tree before use."
         )
 
-    def get_leaves(self, node: Node) -> List[Node]:
+    def get_leaves(
+        self,
+        node: Node,
+        prop: Optional[BinaryNodeProperty] = None
+    ) -> List[Node]:
         """Get leaves of a node."""
         if self.children is not None:
-            return _get_leaves(self.children, node)
+            return _get_leaves(self.children, node, prop)
         raise UndefinedChildhood(
-            "Childhood of the tree was not defined, please build the tree before use."
+            "Childhood of the tree was not defined, "
+            "please build the tree before use."
         )
 
     def to_json(self, jsonfile):
@@ -89,19 +99,57 @@ class Tree(object):
 
     def from_json(self, jsonfile):
         """Create the tree from a json file."""
+        # Keep in mind that json keys have to be str.
+        # In treez framework, they can be python object as well
+        # We use ast to parse the str to a python object before
+
+        # This behaviour might limit even more the types of
+        # parenthood/childhood/props keys when using treez...
         with open(jsonfile, "r") as jf:
             json_dict = json.load(jf)
         for k, v in json_dict.items():
             if k == "nodes":
                 self.nodes = v
             if k == "parents":
-                self.parents = v
+                # Dict[Node, Node]
+                self.parents = dict()
+                for nodein, nodeout in v.items():
+                    try:
+                        nodekey = ast.literal_eval(nodein)
+                        self.parents[nodekey] = nodeout
+                    except (ValueError, SyntaxError):
+                        self.parents[nodein] = nodeout
             if k == "children":
-                self.children = v
+                # Dict[Node, List[Node]]
+                self.children = dict()
+                for nodein, nodeout in v.items():
+                    try:
+                        nodekey = ast.literal_eval(nodein)
+                        self.children[nodekey] = nodeout
+                    except (ValueError, SyntaxError):
+                        self.children[nodein] = nodeout
+                    # nodekey = ast.literal_eval(nodein)
+                    # self.children[nodekey] = nodeout
             if k == "edgeprops":
-                self.edgeprops = v
+                self.edgeprops = dict()
+                for name, edgeprop in v.items():
+                    self.edgeprops[name] = dict()
+                    for edgein, edgeout in edgeprop.items():
+                        try:
+                            edgekey = ast.literal_eval(edgein)
+                            self.edgeprops[name][edgekey] = edgeout
+                        except (ValueError, SyntaxError):
+                            self.edgeprops[name][edgein] = edgeout
             if k == "nodeprops":
-                self.nodeprops = v
+                self.nodeprops = dict()
+                for name, nodeprop in v.items():
+                    self.nodeprops[name] = dict()
+                    for nodein, nodeout in nodeprop.items():
+                        try:
+                            nodekey = ast.literal_eval(nodein)
+                            self.nodeprops[name][nodekey] = nodeout
+                        except (ValueError, SyntaxError):
+                            self.nodeprops[name][nodein] = nodeout
 
     def build_kruskal(
         self, edges: Sequence[Edge],
@@ -144,9 +192,10 @@ class Tree(object):
                     cut[node] = False
             self.nodeprops[cut_name] = cut
 
-        raise UnknownNodeProperty(
-            "Property {}"
-            " is not in the tree properties: {}".format(
-                prop, list(self.nodeprops.keys())
+        else:
+            raise UnknownNodeProperty(
+                "Property {}"
+                " is not in the tree properties: {}".format(
+                    prop, list(self.nodeprops.keys())
+                )
             )
-        )
