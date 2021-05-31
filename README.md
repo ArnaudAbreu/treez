@@ -5,6 +5,10 @@
 
 **Simple tree handling in python.**
 
+
+</div>
+
+
 ---
 
 ## treez aims to standardize and automate most of tree code I produce...

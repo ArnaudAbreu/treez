@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name="treez",
     version="0.0.0",
-    description="procedures for wsi analysis",
+    description="procedures for hierarchies",
     author="Arnaud Abreu",
     author_email="arnaud.abreu.p@gmail.com",
     packages=find_packages(),

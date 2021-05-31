@@ -82,12 +82,9 @@ def get_root_path_match(
     root_path = [node]
     while root in parents:
         if root == target:
-            return root
+            return root_path
         root = parents[root]
         root_path.append(root)
-    raise UnreachableAncestor(
-        "Target {} is not in {}'s ancestors!".format(target, node)
-    )
 
 
 def get_leaves_without_prop(
@@ -333,7 +330,7 @@ def common_ancestor(
             "Nodes {} and {} have no common ancestors!!!".format(node1, node2)
         )
     raise UnrelatedNode(
-        "One of the provided nodes: {}, {} has no parent...".format(
+        "One of the provided nodes: ({}, {}) has no parent...".format(
             node1, node2
         )
     )
@@ -361,12 +358,14 @@ def weighted_dist(
     ancestor = common_ancestor(parents, node1, node2)
     rpm1 = get_root_path_match(parents, node1, ancestor)
     rpm2 = get_root_path_match(parents, node2, ancestor)
-    nodes_in_path = set(rpm1) | set(rpm2)
+    nodes_in_path = (set(rpm1) | set(rpm2))
+    nodes_in_path.discard(node1)
+    nodes_in_path.discard(node2)
     dist = 0.
     for node in nodes_in_path:
         if node not in weights:
             raise UnknownNodeProperty(
-                "Missing weight for node {} to compute a weighted distance!!!"
+                "Missing weight for node {} to compute a weighted distance!!!".format(node)
             )
         dist += weights[node]
     # minus 1 otherwise ancestor is counted twice
